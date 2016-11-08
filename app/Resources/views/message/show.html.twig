@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Message</h1>
+    <table>
+        <tbody>
+        {% for i in message %}
+          <h2>Content</h2>
+          <span>{{ i.body }}</span>
+            <h2>created</h2>
+            <span>{{ i.created |date('Y-m-d H:i:s')}}</span>
+        {% endfor %}
+        </tbody>
+    </table><br>
+{% endblock %}

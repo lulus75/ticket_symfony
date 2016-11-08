@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Ticket</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Title</th>
+                <td>{{ ticket.title }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ ticket.description }}</td>
+            </tr>
+            <tr>
+                <th>Created</th>
+                <td>{% if ticket.created %}{{ ticket.created|date('Y-m-d H:i:s') }}{% endif %}</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <ul>
+
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete this ticket">
+            {{ form_end(delete_form) }}
+        </li>
+        <li>
+            <a href="{{ path('ticket_edit', { 'id': ticket.id }) }}">Edit this ticket</a>
+        </li>
+    </ul>
+    <ul>
+
+        {% include 'message/show.html.twig' %}
+
+        {% include 'message/new.html.twig' %}
+
+    </ul>
+
+
+
+
+    <ul>
+        <li>
+            <a href="{{ path('ticket_index') }}">Back to the list</a>
+        </li>
+
+    </ul>
+{% endblock %}
