@@ -23,14 +23,20 @@ class Message
 
     /**
      * @var string
-     * @ORM\Column(name="body", type="text")
+     * @ORM\Column(name="message", type="text")
      */
-    private $body;
+    private $message;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Ticket",cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Ticket",cascade={"persist","remove"}, inversedBy="message")
      */
     private $ticket;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="UserBundle\Entity\User",cascade={"persist"})
+     */
+    private $user;
+
 
     /**
      * @var \DateTime
@@ -48,30 +54,6 @@ class Message
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Set body
-     *
-     * @param string $body
-     *
-     * @return Message
-     */
-    public function setBody($body)
-    {
-        $this->body = $body;
-
-        return $this;
-    }
-
-    /**
-     * Get body
-     *
-     * @return string
-     */
-    public function getBody()
-    {
-        return $this->body;
     }
 
 
@@ -121,5 +103,53 @@ class Message
     public function getCreated()
     {
         return $this->created;
+    }
+
+    /**
+     * Set message
+     *
+     * @param string $message
+     *
+     * @return Message
+     */
+    public function setMessage($message)
+    {
+        $this->message = $message;
+
+        return $this;
+    }
+
+    /**
+     * Get message
+     *
+     * @return string
+     */
+    public function getMessage()
+    {
+        return $this->message;
+    }
+
+    /**
+     * Set user
+     *
+     * @param \UserBundle\Entity\User $user
+     *
+     * @return Message
+     */
+    public function setUser(\UserBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get user
+     *
+     * @return \UserBundle\Entity\User
+     */
+    public function getUser()
+    {
+        return $this->user;
     }
 }

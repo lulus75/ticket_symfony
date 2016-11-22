@@ -18,7 +18,6 @@ class TicketType extends AbstractType
         $builder
             ->add('title')
             ->add('description', TextType::class);
-
     }
 
     /**

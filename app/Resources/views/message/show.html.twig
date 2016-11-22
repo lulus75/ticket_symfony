@@ -5,10 +5,16 @@
     <table>
         <tbody>
         {% for i in message %}
-          <h2>Content</h2>
-          <span>{{ i.body }}</span>
-            <h2>created</h2>
-            <span>{{ i.created |date('Y-m-d H:i:s')}}</span>
+    <hr>
+          <span>{{ i.message }}</span>
+            <br>
+            <span>Posted the {{ i.created |date('Y-m-d H:i:s')}} by {{ i.user }}</span>
+
+            {% if is_granted('ROLE_ADMIN') %}
+
+                <a href="{{ path('message_edit', { 'id': i.id }) }}">&nbsp&nbsp&nbsp<button>edit</button></a>
+
+            {% endif %}
         {% endfor %}
         </tbody>
     </table><br>

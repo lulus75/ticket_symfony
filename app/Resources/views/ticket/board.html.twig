@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% if is_granted('ROLE_ADMIN') %}
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    <input type="submit" value="Add" />
+    {{ form_end(form) }}
+
+
+
+    <br><br>
+
+    <a href="{{ path('ticket_index') }}"><button>Back to the list</button></a>
+    {% else %}
+    <script>window.location.href = {{path('ticket_index')}}</script>
+    {% endif %}
+{% endblock %}

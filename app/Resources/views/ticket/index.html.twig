@@ -1,40 +1,79 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <h1>Tickets list</h1>
+    <div class="container">
+        <div class="row">
 
-    <table>
-        <thead>
-            <tr>
+            <h1>Tickets list</h1>
+            {% if ticketCount != 0 %}
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Created</th>
+                        <th>Author</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for userAuths in userAuth %}
+                        {% if userAuth != null %}
+                            <tr>
+                                <td>{{ userAuths.title }}</td>
+                                <td>{% if userAuths.created %}{{ userAuths.created|date('Y-m-d H:i:s') }}{% endif %}</td>
+                                <td>
+                                    {% for users in user %}
+                                        {% if userAuths.user.id == users.id %}
+                                            {{ users.username }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('ticket_show', { 'id': userAuths.id }) }}"><button>show</button></a>
 
-                <th>Title</th>
-                <th>Created</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for ticket in tickets %}
-            <tr>
-                <td>{{ ticket.title }}</td>
-                <td>{% if ticket.created %}{{ ticket.created|date('Y-m-d H:i:s') }}{% endif %}</td>
-                <td>
-                    <ul>
-                        <li>
-                            <a href="{{ path('ticket_show', { 'id': ticket.id }) }}">show</a>
-                        </li>
-                        <li>
-                            <a href="{{ path('ticket_edit', { 'id': ticket.id }) }}">edit</a>
-                        </li>
-                    </ul>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                                    {% if is_granted('ROLE_ADMIN') %}
 
-    <ul>
-        <li>
-            <a href="{{ path('ticket_new') }}">Create a new ticket</a>
-        </li>
-    </ul>
+                                        <a href="{{ path('ticket_edit', { 'id': userAuths.id }) }}"><button>edit</button></a>
+
+                                    {% endif %}
+
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for ticket in tickets %}
+                        {% if app.user.id == ticket.user.id or is_granted('ROLE_ADMIN') %}
+
+                            <tr>
+                                <td>{{ ticket.title }}</td>
+                                <td>{% if ticket.created %}{{ ticket.created|date('Y-m-d H:i:s') }}{% endif %}</td>
+                                <td>
+                                    {% for users in user %}
+                                        {% if ticket.user.id == users.id %}
+                                            {{ users.username }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('ticket_show', { 'id': ticket.id }) }}"><button>show</button></a>
+                                    {% if is_granted('ROLE_ADMIN') %}
+
+                                        <a href="{{ path('ticket_edit', { 'id': ticket.id }) }}"><button>edit</button></a>
+
+                                    {% endif %}
+
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{{ path('ticket_new') }}"><button>Create a new ticket</button></a>
+            {% else %}
+                <span>You don't have any tickets, you can create one :</span><br>
+                <a href="{{ path('ticket_new') }}"><button>Create a new ticket</button></a>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

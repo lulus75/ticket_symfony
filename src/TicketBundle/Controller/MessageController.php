@@ -67,8 +67,13 @@ class MessageController extends Controller
     {
         $deleteForm = $this->createDeleteForm($message);
 
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository('UserBundle:User')->findAll();
+
+
         return $this->render('message/show.html.twig', array(
             'message' => $message,
+            'user' => $user,
             'delete_form' => $deleteForm->createView(),
         ));
     }
@@ -93,7 +98,7 @@ class MessageController extends Controller
 
         return $this->render('message/edit.html.twig', array(
             'message' => $message,
-            'edit_form' => $editForm->createView(),
+            'form' => $editForm->createView(),
             'delete_form' => $deleteForm->createView(),
         ));
     }
@@ -115,7 +120,7 @@ class MessageController extends Controller
             $em->flush($message);
         }
 
-        return $this->redirectToRoute('message_index');
+        return $this->redirectToRoute('ticket_index');
     }
 
     /**

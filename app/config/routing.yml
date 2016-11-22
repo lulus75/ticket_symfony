@@ -1,4 +1,11 @@
+user:
+    resource: "@UserBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
 ticket:
     resource: "@TicketBundle/Controller/"
     type:     annotation
     prefix:   /
+user_bundle:
+   resource: "@UserBundle/Resources/config/routing.yml"

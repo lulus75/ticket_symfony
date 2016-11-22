@@ -15,7 +15,7 @@
         {% for message in messages %}
             <tr>
                 <td><a href="{{ path('message_show', { 'id': message.id }) }}">{{ message.id }}</a></td>
-                <td>{{ message.body }}</td>
+                <td>{{ message.message }}</td>
                 <td>
                     <ul>
                         <li>
@@ -31,9 +31,6 @@
         </tbody>
     </table>
 
-    <ul>
-        <li>
             <a href="{{ path('message_new') }}">Create a new message</a>
-        </li>
-    </ul>
+
 {% endblock %}

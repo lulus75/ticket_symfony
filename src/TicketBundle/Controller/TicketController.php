@@ -6,7 +6,9 @@ use TicketBundle\Entity\Ticket;
 use TicketBundle\Entity\Message;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;use Symfony\Component\HttpFoundation\Request;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\Request;
+use UserBundle\Entity\User;
 
 /**
  * Ticket controller.
@@ -23,15 +25,70 @@ class TicketController extends Controller
      */
     public function indexAction()
     {
+        $userId = $this->get('security.token_storage')->getToken()->getUser();
+
+        $userAuth = $userId->getTicket();
+
         $em = $this->getDoctrine()->getManager();
 
+        $count = $em->getRepository('TicketBundle:Ticket');
         $tickets = $em->getRepository('TicketBundle:Ticket')->findAll();
+        $user = $em->getRepository('UserBundle:User')->findAll();
+
+
+        $ticketCount = $count->createQueryBuilder('ticket')
+            ->select('COUNT(ticket)')
+            ->where('ticket.user ='.$userId->getId())
+            ->getQuery()
+            ->getSingleScalarResult();
+
 
         return $this->render('ticket/index.html.twig', array(
             'tickets' => $tickets,
+            'user'=>$user,
+            'userAuth'=>$userAuth,
+            'ticketCount' => $ticketCount
         ));
     }
 
+    /**
+     * Lists all ticket entities.
+     *
+     * @Route("/board", name="ticket_board")
+     * @Method({"GET", "POST"})
+     */
+    public function boardAction(Request $request)
+    {
+
+
+    $form = $this->createForm('TicketBundle\Form\BoardType');
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $user = $form["users"]->getData();
+            $ticket= $form["ticket"]->getData();
+
+            $userRepository = $this->getDoctrine()->getManager()->getRepository('UserBundle:User')
+            ;
+            $userDisp = $userRepository->findById($user->getId());
+            $ticketRepository = $this->getDoctrine()->getManager()->getRepository('TicketBundle:Ticket')
+            ;
+            $ticketDisp = $ticketRepository->findByTitle($ticket->getTitle());
+            $ticketId = $ticketDisp[0]->addAuthorization($userDisp[0]);
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($ticketId);
+            $em->flush();
+
+
+        }
+
+        return $this->render('ticket/board.html.twig', array(
+            'form' => $form->createView(),
+        ));
+
+    }
     /**
      * Creates a new ticket entity.
      *
@@ -41,14 +98,18 @@ class TicketController extends Controller
     public function newAction(Request $request)
     {
         $ticket = new Ticket();
+
         $form = $this->createForm('TicketBundle\Form\TicketType', $ticket);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $userId = $this->get('security.token_storage')->getToken()->getUser();
+
             $ticket->setCreated(new \DateTime("now"));
+            $ticket ->setUser($userId);
             $em = $this->getDoctrine()->getManager();
             $em->persist($ticket);
-            $em->flush($ticket);
+            $em->flush();
 
             return $this->redirectToRoute('ticket_show', array('id' => $ticket->getId()));
         }
@@ -67,9 +128,42 @@ class TicketController extends Controller
      */
     public function showAction(Ticket $ticket, Request $request)
     {
+
+
+        $userId = $ticket->getUser();
+        $userManager = $this->get('fos_user.user_manager');
+
+
+        $userCurrent = $this->get('security.token_storage')->getToken()->getUser();
+
+        $authorisedUser = false;
+
+        if($ticket->getUser()->getId() == $userCurrent->getId()){
+            //return $this->redirectToRoute("ticket_index");
+            $authorisedUser = true;
+        }
+
+        if(in_array($userCurrent, $ticket->getAuthorization()->getValues())){
+            $authorisedUser = true;
+        }
+
+        if($userCurrent->hasRole('ROLE_ADMIN')){
+            $authorisedUser = true;
+        }
+
+        if($authorisedUser == false){
+            return $this->redirectToRoute("ticket_index");
+        }
+
+
+
+        $userAuth = $userId->getTicket();
+        $user = $userManager->findUserBy(array('id' => $userId));
+
         $messageRepository = $this->getDoctrine()->getManager()->getRepository('TicketBundle:Message')
         ;
         $messageDisp = $messageRepository->findByTicket($ticket);
+
 
         $message = new Message();
 
@@ -80,9 +174,10 @@ class TicketController extends Controller
         if ($form->isSubmitted() && $form->isValid()) {
 
             $ticketRepository = $this ->getDoctrine() ->getManager()->getRepository('TicketBundle:Ticket');
-
+            $userId = $this->get('security.token_storage')->getToken()->getUser();
                 $ticket = $ticketRepository->find($ticket->getId());
                 $message->setTicket($ticket);
+                $message->setUser($userId);
                 $message->setCreated(new \DateTime("now"));
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($message);
@@ -93,6 +188,8 @@ class TicketController extends Controller
 
         return $this->render('ticket/show.html.twig', array(
             'ticket' => $ticket,
+            'user' => $user,
+            'userAuth' => $userAuth,
             'message' => $messageDisp,
             'form' => $form->createView(),
             'delete_form' => $deleteForm->createView(),
@@ -114,7 +211,7 @@ class TicketController extends Controller
         if ($editForm->isSubmitted() && $editForm->isValid()) {
             $this->getDoctrine()->getManager()->flush();
 
-            return $this->redirectToRoute('ticket_edit', array('id' => $ticket->getId()));
+            return $this->redirectToRoute('ticket_show', array('id' => $ticket->getId()));
         }
 
         return $this->render('ticket/edit.html.twig', array(
